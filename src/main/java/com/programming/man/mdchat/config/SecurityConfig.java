@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -30,6 +31,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -47,53 +49,47 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .cors().and()
-//                .csrf().disable()
-                .authorizeRequests(authorize -> authorize
-                                .requestMatchers("/api/auth/**")
-                                .permitAll()
-                                .requestMatchers("/api/posts/**")
-                                .permitAll()
-                                .requestMatchers("/api/posts/delete/**")
-                                .permitAll()
-                                .requestMatchers("/api/posts/by-id/**")
-                                .permitAll()
-                                .requestMatchers("/api/votes/**")
-                                .permitAll()
-                                .requestMatchers("/api/comments/**")
-                                .permitAll()
-                                .requestMatchers("/api/comments/by-post/**")
-                                .permitAll()
-                                .requestMatchers("/api/channel/**")
-                                .permitAll()
-                                .requestMatchers("/api/channel/create")
-                                .permitAll()
-                                //.requestMatchers(HttpMethod.GET, "/api/posts")
-                                //.permitAll()
-                                ////.requestMatchers(HttpMethod.POST, "/api/posts")
-                                ////.permitAll()
-                                //.requestMatchers(HttpMethod.GET, "/api/posts/**")
-                                //.permitAll()
-                                .requestMatchers("/v3/api-docs/**",
-//                                "/configuration/ui",
-//                                "/swagger-resources/**",
-                                        "/configuration/security",
-                                        "/swagger-ui/**"
-//                                "/webjars/**"
-                                )
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
-                )
+//                .cors().and()
+.csrf().disable()
+.authorizeRequests(authorize -> authorize
+                           .requestMatchers("/api/auth/**").permitAll()
+                           .requestMatchers("/api/auth/signup").permitAll()
+                           .requestMatchers("/api/posts/**").permitAll()
+                           .requestMatchers("/api/posts/all").permitAll()
+                           .requestMatchers("/api/channel/**").permitAll()
+                           .requestMatchers("/api/comments/**").permitAll()
+                           .requestMatchers("/api/votes/**").permitAll()
+                           .requestMatchers("/api/channel/search").permitAll()
+                           .requestMatchers("/api/posts/chposts/**").permitAll()
+                           .requestMatchers("/api/file/**").permitAll()
+                           .requestMatchers("/api/file/upload/**").permitAll()
+                           .requestMatchers("/api/posts/create").permitAll()
+                           .requestMatchers("/api/posts/delete/**").permitAll()
+                           .requestMatchers("/api/posts/by-id/**").permitAll()
+                           .requestMatchers("/api/comments/by-post/**")
+                           .permitAll()
+                           .requestMatchers("/api/channel/create")
+                           .permitAll()
+                           .requestMatchers("/v3/api-docs/**",
+                                            "/configuration/ui",
+                                            "/swagger-resources/**",
+//                                            "/configuration/security",
+//                                            "/swagger-ui/**",
+                                            "/webjars/**"
+                                           )
+                           .permitAll()
+                           .anyRequest()
+                           .authenticated()
+                  )
 
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                )
-                .csrf(AbstractHttpConfigurer::disable)
-                .build();
+.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+.exceptionHandling(exceptions -> exceptions
+                           .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                           .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
+                  )
+.csrf(AbstractHttpConfigurer::disable)
+.build();
     }
 
     @Bean

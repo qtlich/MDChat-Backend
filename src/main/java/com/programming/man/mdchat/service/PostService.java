@@ -14,15 +14,20 @@ import com.programming.man.mdchat.repository.ChannelRepository;
 import com.programming.man.mdchat.repository.OperationResultRepository;
 import com.programming.man.mdchat.repository.PostRepository;
 import com.programming.man.mdchat.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.StoredProcedureQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.procedure.ProcedureOutputs;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -30,61 +35,76 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 @Slf4j
 public class PostService {
-
+    @PersistenceContext(name = "MDCHAT")
+    private EntityManager entityManager;
     private PostRepository postRepository;
     private OperationResultRepository operationResultRepository;
     private ChannelRepository channelRepository;
     private UserRepository userRepository;
     private AuthService authService;
     private PostMapper postMapper;
-    @Autowired
     private OperationResultMapper operationResultMapper;
 
-    public void save(PostRequest postRequest) {
+    public Post save(PostRequest postRequest) {
         Channel channel = channelRepository.findById(postRequest.getChannelId())
-                .orElseThrow(() -> new ChannelNotFoundException(postRequest.getChannelName()));
-        postRepository.save(postMapper.map(postRequest, channel, authService.getCurrentUser()));
+                                           .orElseThrow(() -> new ChannelNotFoundException(postRequest.getChannelName()));
+        return postRepository.save(postMapper.map(postRequest, channel, authService.getCurrentUser()));
     }
 
     @Transactional(readOnly = true)
     public PostResponse getPost(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException(id.toString()));
+                                  .orElseThrow(() -> new PostNotFoundException(id.toString()));
         return postMapper.mapToDto(post);
     }
 
     @Transactional(readOnly = true)
     public List<PostResponse> getAllPosts() {
         return postRepository.findAll()
-                .stream()
-                .map(postMapper::mapToDto)
-                .collect(toList());
+                             .stream()
+                             .map(postMapper::mapToDto)
+                             .collect(toList());
     }
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPostsByChannel(Long channelId) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
-        List<Post> posts = postRepository.findAllPostsByChannel(channel);
+        List<Post> posts = postRepository.getChannelsPosts(channelId, authService.getCurrentUser().getId());
         return posts.stream().map(postMapper::mapToDto).collect(toList());
     }
 
-    @Transactional()
+    @Transactional
     public List<OperationResultDto> deletePostById(Long postId) {
-        List<OperationResultDto> result = operationResultRepository.deletePostByPostId(postId);
-        log.info("**********************************************");
-        log.info("Result: {}", Arrays.toString(result.toArray()));
-        log.info("**********************************************");
-        return result.stream().map(operationResultMapper::mapOperationResultToDto).collect(toList());
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("deletePost")
+                                                            .registerStoredProcedureParameter("postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("userId", Long.class, ParameterMode.IN)
+                                                            .setParameter("postId", postId)
+                                                            .setParameter("userId", authService.getCurrentUser().getId());
+        List<OperationResultDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+            if (resultObjects == null) {
+                result = new ArrayList();
+                result.add(new OperationResultDto(-postId, "Can't delete post"));
+            } else
+
+                result = resultObjects.stream()
+                                      .map(item -> new OperationResultDto((Long) item[0],
+                                                                          (String) item[1]))
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPostsByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+                                  .orElseThrow(() -> new UsernameNotFoundException(username));
         return postRepository.findByUser(user)
-                .stream()
-                .map(postMapper::mapToDto)
-                .collect(toList());
+                             .stream()
+                             .map(postMapper::mapToDto)
+                             .collect(toList());
     }
 }

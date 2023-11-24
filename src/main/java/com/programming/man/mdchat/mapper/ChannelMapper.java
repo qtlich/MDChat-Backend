@@ -17,19 +17,23 @@ public interface ChannelMapper {
     @Mapping(target = "numberOfPosts", expression = "java(mapPosts(channel.getPosts()))")
     ChannelDto mapChannelToDto(Channel channel);
 
-//    @Mapping(target = "numberOfPosts", expression = "java(mapPosts(channel.getPosts()))")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "channelName", source = "channelName")
+    @Mapping(target = "channelDescription", source = "channelDescription")
+    @Mapping(target = "channelType", source = "channelType")
+    @Mapping(target = "created", source = "created")
+    @Mapping(target = "author", source = "author")
+    @Mapping(target = "countPosts", source = "countPosts")
     SearchChannelsResponseDto mapSearchChannelToDto(SearchChannelsResponseDto channel);
 
     default Integer mapPosts(List<Post> numberOfPosts) {
         return numberOfPosts.size();
     }
 
-    //    @InheritInverseConfiguration
-//    @Mapping(target = "name", expression = "channelDto.name")
-//    @Mapping(target = "description", expression = "channelDto.description")
-//    @Mapping(target = "channelType", expression = "channelDto.channelType")
-//    @Mapping(target = "createdDate", expression = "java(java.time.Instant.now())")
     @InheritInverseConfiguration
+    @Mapping(target = "id", source = "channelDto.id")
     @Mapping(target = "posts", ignore = true)
+    @Mapping(target = "created", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "description", source = "channelDto.description")
     Channel mapDtoToChannel(ChannelDto channelDto, User user);
 }

@@ -22,22 +22,21 @@ public class Comment {
     private String text;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "postId", referencedColumnName = "id")
     private Post post;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @NotNull
     @Builder.Default
     private Integer claimsCount = 0;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
+    @NotNull
+    @Builder.Default
+    private Integer voteCount = 0;
+    @NotNull
+    private Instant created;
+    @NotNull
+    @Builder.Default
+    private boolean commentsClosed = false;
 }

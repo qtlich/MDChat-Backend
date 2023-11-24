@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-import static com.programming.man.mdchat.model.VoteType.DOWNVOTE;
-import static com.programming.man.mdchat.model.VoteType.UPVOTE;
+import static com.programming.man.mdchat.model.VoteType.DOWNVOTE_POST;
+import static com.programming.man.mdchat.model.VoteType.UPVOTE_POST;
 
 @Mapper(componentModel = "spring")
 public abstract class PostMapper {
@@ -26,15 +26,17 @@ public abstract class PostMapper {
     @Autowired
     private AuthService authService;
 
-    @Mapping(target = "createdDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "created", expression = "java(java.time.Instant.now())")
     @Mapping(target = "description", source = "postRequest.description")
     @Mapping(target = "channel", source = "channel")
     @Mapping(target = "voteCount", constant = "0")
     @Mapping(target = "user", source = "user")
+    @Mapping(target = "id", source = "postRequest.postId")
+    @Mapping(target = "commentsLocked", source = "postRequest.commentsLocked")
     public abstract Post map(PostRequest postRequest, Channel channel, User user);
 
-    @Mapping(target = "id", source = "postId")
-    @Mapping(target = "postName", source = "post.channel.name")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "postName", source = "post.postName")
     @Mapping(target = "channelName", source = "channel.name")
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "commentCount", expression = "java(commentCount(post))")
@@ -48,18 +50,18 @@ public abstract class PostMapper {
     }
 
     String getDuration(Post post) {
-        if (post == null || post.getCreatedDate() == null)
+        if (post == null || post.getCreated() == null)
             return null;
         else
-            return TimeAgo.using(post.getCreatedDate().toEpochMilli());
+            return TimeAgo.using(post.getCreated().toEpochMilli());
     }
 
     boolean isPostUpVoted(Post post) {
-        return checkVoteType(post, UPVOTE);
+        return checkVoteType(post, UPVOTE_POST);
     }
 
     boolean isPostDownVoted(Post post) {
-        return checkVoteType(post, DOWNVOTE);
+        return checkVoteType(post, DOWNVOTE_POST);
     }
 
     private boolean checkVoteType(Post post, VoteType voteType) {

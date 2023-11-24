@@ -3,6 +3,7 @@ package com.programming.man.mdchat.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
@@ -19,23 +20,15 @@ public class UserChannelsSubscriptions {
     private Long id;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channelId", referencedColumnName = "id")
     private Channel channel;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
+    private Instant created;
     @NotNull
     @Builder.Default
     private boolean enabled = true;
-
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
 }

@@ -1,9 +1,6 @@
 package com.programming.man.mdchat.controller;
 
-import com.programming.man.mdchat.dto.AuthenticationResponse;
-import com.programming.man.mdchat.dto.LoginRequest;
-import com.programming.man.mdchat.dto.RefreshTokenRequest;
-import com.programming.man.mdchat.dto.RegisterRequest;
+import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.service.AuthService;
 import com.programming.man.mdchat.service.RefreshTokenService;
 import jakarta.validation.Valid;
@@ -11,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -24,11 +23,11 @@ public class AuthController {
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
 
+    @CrossOrigin()
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
         authService.signup(registerRequest);
-        return new ResponseEntity<>("User Registration Successful",
-                OK);
+        return new ResponseEntity<>("User Registration Successful", OK);
     }
 
     @GetMapping("accountVerification/{token}")
@@ -50,6 +49,16 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
-        return ResponseEntity.status(OK).body("Refresh Token Deleted Successfully!!");
+        return ResponseEntity.status(OK).body("Refresh Token Deleted Successfully!");
+    }
+
+    @PostMapping("/changeuserinfo")
+    public ResponseEntity<List<OperationResultDto>> changeUserInfo(@Valid @RequestBody ChangeUserInfoDto userInfo) {
+        return ResponseEntity.status(OK).body(authService.changeUserInfo(userInfo));
+    }
+
+    @PostMapping("/getusersinfo")
+    public ResponseEntity<List<UserInfoResponseDto>> getUserInfo(@Valid @RequestBody UserInfoRequest userInfo) {
+        return ResponseEntity.status(OK).body(authService.getUserInfo(userInfo.getUserIdentifier()));
     }
 }

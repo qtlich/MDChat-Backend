@@ -17,7 +17,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Table(name = "token")
 public class VerificationToken {
-
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
@@ -25,7 +24,6 @@ public class VerificationToken {
     private String token;
     @NotNull
     @OneToOne(fetch = LAZY)
-    private User user;
-    @NotNull
-    private Instant expiryDate;
+    @JoinColumn(name = "userId", referencedColumnName = "id")
+    private User user;private Instant expiryDate;
 }

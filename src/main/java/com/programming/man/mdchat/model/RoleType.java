@@ -10,7 +10,7 @@ import lombok.*;
 /*
 RoleTypeID	RoleName	Description
 1	User	Обычный пользователь
-2	Moderator	Модератор подраздела
+2	Moderator	Модератор каналу
 3	Administrator	Администратор платформы
 4	Supermoderator	Супермодератор (высший уровень модерации)
  */

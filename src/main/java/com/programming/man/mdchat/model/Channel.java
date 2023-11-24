@@ -3,8 +3,8 @@ package com.programming.man.mdchat.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import lombok.extern.java.Log;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
@@ -18,7 +18,26 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @Entity
 @Builder
-public class Channel {
+//@NamedNativeQuery(
+//        name = "searchChannelsByNameDto",
+//        query = "CALL searchChannelsByName(:channelName)",
+//        resultSetMapping = "search_channels_dto"
+//)
+//@SqlResultSetMapping(
+//        name = "search_channels_dto",
+//        classes = @ConstructorResult(targetClass = SearchChannelsResponseDto.class,
+//                columns = {
+//                        @ColumnResult(name = "id", type = Long.class),
+//                        @ColumnResult(name = "channelName", type = String.class),
+//                        @ColumnResult(name = "channelDescription", type = String.class),
+//                        @ColumnResult(name = "channelType", type = Long.class),
+//                        @ColumnResult(name = "created", type = String.class),
+//                        @ColumnResult(name = "author", type = String.class),
+//                        @ColumnResult(name = "countPosts", type = Long.class)
+//                }
+//        )
+//)
+public class Channel implements Serializable {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
@@ -28,24 +47,18 @@ public class Channel {
     private String name;
     @NotNull
     @Lob
-    @Column(name = "description",columnDefinition = "LONGTEXT")
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
     @NotNull
     private Short channelType;
     @OneToMany(fetch = LAZY)
     @Column(name = "post_id")
+    @JoinColumn(name = "post_id", referencedColumnName = "id")
     private List<Post> posts;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
+    private Instant created;
     @NotNull
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
 }

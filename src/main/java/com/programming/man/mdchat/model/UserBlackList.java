@@ -4,6 +4,7 @@ package com.programming.man.mdchat.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
@@ -18,26 +19,20 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class UserBlackList {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Long Id;
+    private Long id;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userIdFrom", referencedColumnName = "userId")
+    @JoinColumn(name = "userIdFrom", referencedColumnName = "id")
     private User userFrom;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userIdTo", referencedColumnName = "userId")
+    @JoinColumn(name = "userIdTo", referencedColumnName = "id")
     private User userTo;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant momentBan;
+    private Instant created;
     @NotNull
     private boolean disableView;
     @NotNull
     private boolean disableComment;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        momentBan = Instant.now();
-    }
+
 }

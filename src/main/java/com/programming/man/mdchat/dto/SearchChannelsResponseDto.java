@@ -8,10 +8,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchChannelsResponseDto {// extends ChannelDto{
+public class SearchChannelsResponseDto {
     private Long id;
-    private String name;
-    private String description;
+    private String channelName;
+    private String channelDescription;
     private Short channelType;
-    private Integer numberOfPosts;
+    private String created;
+    private String author;
+    private Long countPosts;
 }

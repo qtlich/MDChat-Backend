@@ -17,7 +17,7 @@ public class UserRoles {
     private Long userRoleId;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

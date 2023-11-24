@@ -1,7 +1,9 @@
 package com.programming.man.mdchat.model;
 
-import jakarta.persistence.*;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -17,22 +19,16 @@ import java.time.Instant;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-    @NotNull
+    private Long id;
     private String username;
     @NotNull
     private String password;
     private String email;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
     private Instant created;
+
     @NotNull
-    @Builder.Default
-    private boolean enabled = true;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        created = Instant.now();
-    }
+    private boolean enabled;
+    private String description;
+    private Instant modified;
 }

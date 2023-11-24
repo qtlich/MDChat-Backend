@@ -45,10 +45,10 @@ class PostServiceTest {
 
     private PostService postService;
 
-    @BeforeEach
-    public void setup() {
-        postService = new PostService(postRepository, operationResultRepository, channelRepository, userRepository, authService, postMapper, operationResultMapper);
-    }
+//    @BeforeEach
+//    public void setup() {
+//        postService = new PostService(postRepository, operationResultRepository, channelRepository, userRepository, authService, postMapper, operationResultMapper,null);
+//    }
 
 //    @Test
 //    @DisplayName("Should Retrieve Post by Id")

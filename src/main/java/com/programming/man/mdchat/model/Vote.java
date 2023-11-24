@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
@@ -13,10 +14,10 @@ import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Vote {
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -25,19 +26,16 @@ public class Vote {
     private VoteType voteType;
     @NotNull
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "postId", referencedColumnName = "id")
     private Post post;
     @NotNull
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "commentId", referencedColumnName = "id")
+    private Comment comment;
+    @NotNull
+    private Instant created;
 }

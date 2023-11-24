@@ -12,6 +12,7 @@ import com.programming.man.mdchat.repository.CommentRepository;
 import com.programming.man.mdchat.repository.PostRepository;
 import com.programming.man.mdchat.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 

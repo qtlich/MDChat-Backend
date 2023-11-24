@@ -36,11 +36,11 @@ public class ChannelController {
                 .status(HttpStatus.OK)
                 .body(channelService.getAll());
     }
-    @GetMapping("/search")
-    public ResponseEntity<List<SearchChannelsResponseDto>> searchChannels(@RequestBody SearchChannelsRequestDto channelName) {
+    @PostMapping("/search")
+    public ResponseEntity<List<SearchChannelsResponseDto>> searchChannels(@RequestBody SearchChannelsRequestDto searchChannelRequest) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(channelService.searchChannels(channelName.getChannelName()));
+                .body(channelService.searchChannels(searchChannelRequest.getChannelName(),  searchChannelRequest.getDescLength(),searchChannelRequest.getSearchMode()));
     }
 
     @GetMapping("/{id}")

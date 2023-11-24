@@ -1,11 +1,32 @@
 package com.programming.man.mdchat.model;
 
+import com.programming.man.mdchat.dto.OperationResultDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
+
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(
+                name = "procDeletePost",
+                procedureName = "deletePost",
+                resultClasses = {OperationResultDto.class},
+                parameters = {
+                        @StoredProcedureParameter(
+                                name = "postId",
+                                type = Long.class,
+                                mode = ParameterMode.IN),
+                        @StoredProcedureParameter(
+                                name = "userId",
+                                type = Long.class,
+                                mode = ParameterMode.IN)
+                }
+
+        )
+})
 @Getter
 @Setter
 @Entity
@@ -15,7 +36,7 @@ import java.time.Instant;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long postId;
+    private Long id;
     @NotNull
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -29,12 +50,10 @@ public class Post {
     private String description;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
+    private Instant created;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channelId", referencedColumnName = "id")
@@ -42,11 +61,6 @@ public class Post {
     @NotNull
     @Builder.Default
     private Integer voteCount = 0;
-    //    private Long parentPostId;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
-
+    @NotNull
+    private Boolean commentsLocked;
 }

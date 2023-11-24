@@ -3,6 +3,7 @@ package com.programming.man.mdchat.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
@@ -18,13 +19,6 @@ public class RefreshToken {
     private Long id;
     @NotNull
     private String token;
-    @NotNull
-    @Transient
-    @Access(AccessType.PROPERTY)
-    private Instant createdDate;
-    @PrePersist
-    @PreUpdate
-    protected void onCreate() {
-        createdDate = Instant.now();
-    }
+//    @NotNull
+    private Instant created;
 }

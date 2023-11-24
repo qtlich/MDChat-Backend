@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -33,7 +34,7 @@ public class VoteService {
             throw new SpringMDChatException("You have already "
                     + voteDto.getVoteType() + "'d for this post");
         }
-        if (VoteType.UPVOTE.equals(voteDto.getVoteType())) {
+        if (VoteType.UPVOTE_POST.equals(voteDto.getVoteType())) {
             post.setVoteCount(post.getVoteCount() + 1);
         } else {
             post.setVoteCount(post.getVoteCount() - 1);
@@ -47,6 +48,7 @@ public class VoteService {
                 .voteType(voteDto.getVoteType())
                 .post(post)
                 .user(authService.getCurrentUser())
+                .created(Instant.now())
                 .build();
     }
 }

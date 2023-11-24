@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostRequest {
+public class   PostRequest {
     private Long postId;
     @NotBlank(message = "Post Name cannot be empty or Null")
     private String postName;
@@ -16,4 +16,5 @@ public class PostRequest {
     private String channelName;
     private String url;
     private String description;
+    private Boolean commentsLocked;
 }
