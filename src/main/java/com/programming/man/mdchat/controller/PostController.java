@@ -28,12 +28,17 @@ public class PostController {
         return status(HttpStatus.OK).body(postService.save(postRequest));
     }
 
+    @PostMapping(value = "cud") //posts/cud
+    public ResponseEntity<List<PostCUDResponse>> createPost(@RequestBody PostCUDRequest postCUDRequest) {
+        return status(HttpStatus.OK).body(postService.postCUD(postCUDRequest));
+    }
+
     @GetMapping(value = "all")
     public ResponseEntity<List<PostResponse>> getAllPosts() {
         return status(HttpStatus.OK).body(postService.getAllPosts());
     }
     @PostMapping(value = "v1/all")
-    public ResponseEntity<List<GetAllPostsDto>> getAllPostsV1(@RequestBody GetAllPostsRequest request) {
+    public ResponseEntity<List<GetAllPostsResponse>> getAllPostsV1(@RequestBody GetAllPostsRequest request) {
         return status(HttpStatus.OK).body(postService.getAllPostsV1(request));
     }
 

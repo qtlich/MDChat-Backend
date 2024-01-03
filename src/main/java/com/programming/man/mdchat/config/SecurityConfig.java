@@ -58,6 +58,7 @@ public class SecurityConfig {
         .requestMatchers("/api/posts/all").permitAll()
         .requestMatchers("/api/posts/v1/**").permitAll()
         .requestMatchers("/api/posts/v1/all").permitAll()
+        .requestMatchers("/api/posts/cud").authenticated()
         .requestMatchers("/api/channel/**").permitAll()
         .requestMatchers("/api/comments/**").permitAll()
         .requestMatchers("/api/votes/**").permitAll()

@@ -29,8 +29,8 @@ public class VoteController {
         return status(HttpStatus.OK).body(voteService.vote(voteDto));
     }
 
-//    @PostMapping(value = "getpostvotes")
-//    public ResponseEntity<GetUserPostVotesResponseDto> vote(@RequestBody GetCountPostVotesRequestDto request) {
-//        return status(HttpStatus.OK).body(new GetUserPostVotesResponseDto(voteService.getPostVotes(request)));
-//    }
+    @PostMapping(value = "getvotes")
+    public ResponseEntity<GetUserPostVotesResponseDto> vote(@RequestBody GetCountPostVotesRequestDto request) {
+        return status(HttpStatus.OK).body(new GetUserPostVotesResponseDto(voteService.getPostVotes(request)));
+    }
 }

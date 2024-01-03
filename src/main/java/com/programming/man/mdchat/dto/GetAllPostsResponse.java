@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetAllPostsDto {
+public class GetAllPostsResponse {
     private Long postId;
     private Long userId;
     private Long postChannelId;
@@ -20,6 +20,7 @@ public class GetAllPostsDto {
     private String postDescription;
     private Integer postVoteCount;
     private String postCreated;
+    private String postModified;
     private String postUrl;
     private Integer currentUserVoteType;
     private Integer postCountComments;

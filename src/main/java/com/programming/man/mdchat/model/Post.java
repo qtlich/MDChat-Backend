@@ -9,27 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import java.time.Instant;
 
 
-@NamedStoredProcedureQueries({
-        @NamedStoredProcedureQuery(
-                name = "procDeletePost",
-                procedureName = "deletePost",
-                resultClasses = {OperationResultDto.class},
-                parameters = {
-                        @StoredProcedureParameter(
-                                name = "postId",
-                                type = Long.class,
-                                mode = ParameterMode.IN),
-                        @StoredProcedureParameter(
-                                name = "userId",
-                                type = Long.class,
-                                mode = ParameterMode.IN)
-                }
-
-        )
-})
-@Getter
-@Setter
 @Entity
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -54,6 +35,7 @@ public class Post {
     private User user;
     @NotNull
     private Instant created;
+    private Instant modified;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channelId", referencedColumnName = "id")
