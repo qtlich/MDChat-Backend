@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-import static com.programming.man.mdchat.model.VoteType.DOWNVOTE_POST;
-import static com.programming.man.mdchat.model.VoteType.UPVOTE_POST;
+import static com.programming.man.mdchat.model.VoteType.DOWNVOTE;
+import static com.programming.man.mdchat.model.VoteType.UPVOTE;
 
 @Mapper(componentModel = "spring")
 public abstract class PostMapper {
@@ -36,7 +36,7 @@ public abstract class PostMapper {
     public abstract Post map(PostRequest postRequest, Channel channel, User user);
 
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "postName", source = "post.postName")
+    @Mapping(target = "postName", source = "postName")
     @Mapping(target = "channelName", source = "channel.name")
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "commentCount", expression = "java(commentCount(post))")
@@ -57,18 +57,18 @@ public abstract class PostMapper {
     }
 
     boolean isPostUpVoted(Post post) {
-        return checkVoteType(post, UPVOTE_POST);
+        return checkVoteType(post, UPVOTE);
     }
 
     boolean isPostDownVoted(Post post) {
-        return checkVoteType(post, DOWNVOTE_POST);
+        return checkVoteType(post, DOWNVOTE);
     }
 
     private boolean checkVoteType(Post post, VoteType voteType) {
         if (authService.isLoggedIn()) {
-            Optional<Vote> voteForPostByUser =
-                    voteRepository.findTopByPostAndUserOrderByVoteIdDesc(post, authService.getCurrentUser());
-            return voteForPostByUser.filter(vote -> vote.getVoteType().equals(voteType)).isPresent();
+//            Optional<Vote> voteForPostByUser =
+//                    voteRepository.findTopByPostAndUserOrderByVoteIdDesc(post, authService.getCurrentUser());
+//            return voteForPostByUser.filter(vote -> vote.getVoteType().equals(voteType)).isPresent();
         }
         return false;
     }

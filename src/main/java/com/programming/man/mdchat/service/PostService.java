@@ -1,11 +1,8 @@
 package com.programming.man.mdchat.service;
 
-import com.programming.man.mdchat.dto.OperationResultDto;
-import com.programming.man.mdchat.dto.PostRequest;
-import com.programming.man.mdchat.dto.PostResponse;
+import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.exceptions.ChannelNotFoundException;
 import com.programming.man.mdchat.exceptions.PostNotFoundException;
-import com.programming.man.mdchat.mapper.OperationResultMapper;
 import com.programming.man.mdchat.mapper.PostMapper;
 import com.programming.man.mdchat.model.Channel;
 import com.programming.man.mdchat.model.Post;
@@ -43,7 +40,6 @@ public class PostService {
     private UserRepository userRepository;
     private AuthService authService;
     private PostMapper postMapper;
-    private OperationResultMapper operationResultMapper;
 
     public Post save(PostRequest postRequest) {
         Channel channel = channelRepository.findById(postRequest.getChannelId())
@@ -64,6 +60,60 @@ public class PostService {
                              .stream()
                              .map(postMapper::mapToDto)
                              .collect(toList());
+    }
+
+    @Transactional(readOnly = false)
+    public List<GetAllPostsDto> getAllPostsV1(GetAllPostsRequest request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getPosts")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_sortMode", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_offset", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_limit", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postNameMaxLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postDescriptionMaxLength", Long.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_sortMode", request.getSortMode())
+                                                            .setParameter("p_offset", request.getOffset())
+                                                            .setParameter("p_limit", request.getLimit())
+                                                            .setParameter("p_postNameMaxLength", request.getPostNameMaxLength())
+                                                            .setParameter("p_postDescriptionMaxLength", request.getPostDescriptionMaxLength());
+        List<GetAllPostsDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+//            for (Object[] row : resultObjects) {
+//                for (Object column : row) {
+//                    System.out.print(column + "\t"); // Вывод значения столбца с табуляцией
+//                }
+//                System.out.println(); // Переход на новую строку между строками результата
+//            }
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+
+                result = resultObjects.stream()
+                                      .map(item -> new GetAllPostsDto((Long) item[0], //postId
+                                                                      authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : (Long) null, //userId
+                                                                      (Long) item[1], //postChannelId
+                                                                      (Short) item[2],//channelType
+                                                                      (String) item[3],//channelName
+                                                                      (String) item[4],//channelDescription
+                                                                      (Long) item[5],//postUseId
+                                                                      (String) item[6],//postUserName
+                                                                      (String) item[7],//postName
+                                                                      (String) item[8],//postDescription
+                                                                      (Integer) item[9],//postVoteCount
+                                                                      (String) item[10],//postCreated
+                                                                      (String) item[11],//postUrl
+                                                                      (Integer) item[12],//currentUserVoteType
+                                                                      (Integer) item[13],//postCountComments
+                                                                      (String) item[14]))//posttimeAgo
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)

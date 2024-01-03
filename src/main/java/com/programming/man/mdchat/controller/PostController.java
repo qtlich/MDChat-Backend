@@ -1,8 +1,6 @@
 package com.programming.man.mdchat.controller;
 
-import com.programming.man.mdchat.dto.OperationResultDto;
-import com.programming.man.mdchat.dto.PostRequest;
-import com.programming.man.mdchat.dto.PostResponse;
+import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.model.Post;
 import com.programming.man.mdchat.service.PostService;
 import lombok.AllArgsConstructor;
@@ -33,6 +31,10 @@ public class PostController {
     @GetMapping(value = "all")
     public ResponseEntity<List<PostResponse>> getAllPosts() {
         return status(HttpStatus.OK).body(postService.getAllPosts());
+    }
+    @PostMapping(value = "v1/all")
+    public ResponseEntity<List<GetAllPostsDto>> getAllPostsV1(@RequestBody GetAllPostsRequest request) {
+        return status(HttpStatus.OK).body(postService.getAllPostsV1(request));
     }
 
     @GetMapping(value = "by-id/{id}")

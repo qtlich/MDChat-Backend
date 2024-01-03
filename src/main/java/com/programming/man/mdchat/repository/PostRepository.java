@@ -20,8 +20,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "{CALL selectChannelPosts(:channelId, :userId)}", nativeQuery = true)
     List<Post> getChannelsPosts(@Param("channelId") Long channelId, @Param("userId") Long userId) ;
 
-//    @Query(value = "CALL deletePost(:postId);", nativeQuery = true)
-//    @Transactional
-//    @Procedure(name = "procDeletePost")
-//    List<OperationResultDto> deletePostById(@Param("postId") Long postId,@Param("userId") Long userId);
 }

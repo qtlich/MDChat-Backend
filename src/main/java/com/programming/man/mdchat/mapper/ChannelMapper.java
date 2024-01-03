@@ -13,7 +13,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ChannelMapper {
-
     @Mapping(target = "numberOfPosts", expression = "java(mapPosts(channel.getPosts()))")
     ChannelDto mapChannelToDto(Channel channel);
 

@@ -52,43 +52,43 @@ public class SecurityConfig {
 //                .cors().and()
 .csrf().disable()
 .authorizeRequests(authorize -> authorize
-                           .requestMatchers("/api/auth/**").permitAll()
-                           .requestMatchers("/api/auth/signup").permitAll()
-                           .requestMatchers("/api/posts/**").permitAll()
-                           .requestMatchers("/api/posts/all").permitAll()
-                           .requestMatchers("/api/channel/**").permitAll()
-                           .requestMatchers("/api/comments/**").permitAll()
-                           .requestMatchers("/api/votes/**").permitAll()
-                           .requestMatchers("/api/channel/search").permitAll()
-                           .requestMatchers("/api/posts/chposts/**").permitAll()
-                           .requestMatchers("/api/file/**").permitAll()
-                           .requestMatchers("/api/file/upload/**").permitAll()
-                           .requestMatchers("/api/posts/create").permitAll()
-                           .requestMatchers("/api/posts/delete/**").permitAll()
-                           .requestMatchers("/api/posts/by-id/**").permitAll()
-                           .requestMatchers("/api/comments/by-post/**")
-                           .permitAll()
-                           .requestMatchers("/api/channel/create")
-                           .permitAll()
-                           .requestMatchers("/v3/api-docs/**",
-                                            "/configuration/ui",
-                                            "/swagger-resources/**",
+        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/auth/signup").permitAll()
+        .requestMatchers("/api/posts/**").permitAll()
+        .requestMatchers("/api/posts/all").permitAll()
+        .requestMatchers("/api/posts/v1/**").permitAll()
+        .requestMatchers("/api/posts/v1/all").permitAll()
+        .requestMatchers("/api/channel/**").permitAll()
+        .requestMatchers("/api/comments/**").permitAll()
+        .requestMatchers("/api/votes/**").permitAll()
+        .requestMatchers("/api/channel/search").permitAll()
+        .requestMatchers("/api/posts/chposts/**").permitAll()
+        .requestMatchers("/api/file/**").permitAll()
+        .requestMatchers("/api/file/upload/**").permitAll()
+        .requestMatchers("/api/posts/create").permitAll()
+        .requestMatchers("/api/posts/delete/**").permitAll()
+        .requestMatchers("/api/posts/by-id/**").permitAll()
+        .requestMatchers("/api/comments/by-post/**")
+        .permitAll()
+        .requestMatchers("/api/channel/create")
+        .permitAll()
+        .requestMatchers("/v3/api-docs/**",
+                         "/configuration/ui",
+                         "/swagger-resources/**",
 //                                            "/configuration/security",
 //                                            "/swagger-ui/**",
-                                            "/webjars/**"
-                                           )
-                           .permitAll()
-                           .anyRequest()
-                           .authenticated()
-                  )
-
+                         "/webjars/**"
+                        )
+        .permitAll()
+        .anyRequest()
+        .authenticated())
 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 .exceptionHandling(exceptions -> exceptions
-                           .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                           .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                  )
+        .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+        .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
 .csrf(AbstractHttpConfigurer::disable)
+.cors(AbstractHttpConfigurer::disable)
 .build();
     }
 

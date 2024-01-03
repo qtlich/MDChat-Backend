@@ -63,9 +63,6 @@ public class ChannelService {
                         item.get(6, Long.class)))
                 .collect(Collectors.toList());
         return searched;
-//        List<SearchChannelsResponseDto> searched = channelRepository.searchChannelsByName(channelName);
-//            return searched.stream().map(channelMapper::mapSearchChannelToDto).collect(toList());
-
     }
 
 }
