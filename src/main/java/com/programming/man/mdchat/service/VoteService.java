@@ -29,10 +29,10 @@ public class VoteService {
     private final AuthService authService;
     private OperationResultMapper operationResultMapper;
 
-    @Transactional(readOnly = false)
-    public GetUserPostVotesResponseDto getPostVotes(GetCountPostVotesRequestDto request) {
-        return voteRepository.getCountPostVotes(authService.getCurrentUser().getId(), request.getPostId());
-    }
+//    @Transactional(readOnly = false)
+//    public GetUserPostVotesResponseDto getPostVotes(GetCountPostVotesRequestDto request) {
+//        return voteRepository.getCountPostVotes(authService.getCurrentUser().getId(), request.getPostId());
+//    }
 
     @Transactional(readOnly = false)
     public List<OperationResultDto> vote(VoteRequestDto vote) {
