@@ -1,11 +1,9 @@
 package com.programming.man.mdchat.service;
 
-import com.programming.man.mdchat.dto.GetUserPostVotesResponseDto;
-import com.programming.man.mdchat.dto.OperationResultDto;
-import com.programming.man.mdchat.dto.VoteRequestDto;
-import com.programming.man.mdchat.mapper.OperationResultMapper;
 import com.programming.man.mdchat.dto.GetCountPostVotesRequestDto;
-import com.programming.man.mdchat.repository.VoteRepository;
+import com.programming.man.mdchat.dto.GetUserPostVotesResponseDto;
+import com.programming.man.mdchat.dto.VoteRequestV1Dto;
+import com.programming.man.mdchat.dto.VoteResponseV1Dto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.PersistenceContext;
@@ -15,48 +13,72 @@ import org.hibernate.procedure.ProcedureOutputs;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @AllArgsConstructor
 public class VoteService {
 
+    private final AuthService authService;
     @PersistenceContext(name = "MDCHAT")
     private EntityManager entityManager;
-    private final VoteRepository voteRepository;
-    private final AuthService authService;
-    private OperationResultMapper operationResultMapper;
 
-//    @Transactional(readOnly = false)
-//    public GetUserPostVotesResponseDto getPostVotes(GetCountPostVotesRequestDto request) {
-//        return voteRepository.getCountPostVotes(authService.getCurrentUser().getId(), request.getPostId());
-//    }
+    @Transactional
+    public GetUserPostVotesResponseDto getVotes(GetCountPostVotesRequestDto request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("votes")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_commentId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_isVoted", Integer.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("p_countVotes", Long.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("p_upVoted", Integer.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("p_downVoted", Integer.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("p_voteMoment", String.class, ParameterMode.OUT)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_postId", request.getPostId())
+                                                            .setParameter("p_commentId", request.getCommentId());
 
-    @Transactional(readOnly = false)
-    public List<OperationResultDto> vote(VoteRequestDto vote) {
+        GetUserPostVotesResponseDto result;
+        try {
+            storedProcedure.execute();
+            result = new GetUserPostVotesResponseDto(request.getPostId(),
+                                                     request.getCommentId(),
+                                                     (Integer) storedProcedure.getOutputParameterValue("p_isVoted") == 1,
+                                                     (Long) storedProcedure.getOutputParameterValue("p_countVotes"),
+                                                     (Integer) storedProcedure.getOutputParameterValue("p_upVoted") == 1,
+                                                     (Integer) storedProcedure.getOutputParameterValue("p_downVoted") == 1,
+                                                     (String) storedProcedure.getOutputParameterValue("p_voteMoment"));
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+    }
+
+    @Transactional
+    public VoteResponseV1Dto vote(VoteRequestV1Dto vote) {
         StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("vote")
                                                             .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("p_commentId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_voteType", Short.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_voteType", Integer.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_voteCounted", Integer.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("p_countVotes", Long.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("id", Integer.class, ParameterMode.OUT)
+                                                            .registerStoredProcedureParameter("message", String.class, ParameterMode.OUT)
                                                             .setParameter("p_userId", authService.getCurrentUser().getId())
                                                             .setParameter("p_postId", vote.getPostId())
                                                             .setParameter("p_commentId", vote.getCommentId())
                                                             .setParameter("p_voteType", vote.getVoteType());
-        List<OperationResultDto> result;
+
+        VoteResponseV1Dto result;
         try {
-            List<Object[]> resultObjects = storedProcedure.getResultList();
-            System.out.println(resultObjects);
-            if (resultObjects == null) {
-                result = new ArrayList<OperationResultDto>();
-                result.add(new OperationResultDto(-vote.getPostId(), "Can't vote"));
-            } else
-                result = resultObjects.stream()
-                                      .map(item -> new OperationResultDto((Long) item[0],
-                                                                          (String) item[1]))
-                                      .collect(Collectors.toList());
+            storedProcedure.execute();
+            result = new VoteResponseV1Dto(vote.getPostId(),
+                                           vote.getCommentId(),
+                                           (Long) storedProcedure.getOutputParameterValue("p_countVotes"),
+                                           vote.getVoteType(),
+                                           ((Integer) storedProcedure.getOutputParameterValue("p_voteCounted") == 1) && vote.getVoteType() == 1,
+                                           ((Integer) storedProcedure.getOutputParameterValue("p_voteCounted") == 1) && vote.getVoteType() == -1,
+                                           (Integer) storedProcedure.getOutputParameterValue("id"),
+                                           (String) storedProcedure.getOutputParameterValue("message"));
         } finally {
             storedProcedure.unwrap(ProcedureOutputs.class).release();
         }

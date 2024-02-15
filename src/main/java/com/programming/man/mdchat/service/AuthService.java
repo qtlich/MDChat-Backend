@@ -14,6 +14,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.AllArgsConstructor;
 import org.hibernate.procedure.ProcedureOutputs;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.OK;
+
 @Service
 @AllArgsConstructor
 @Transactional
@@ -47,20 +51,31 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    public void signup(RegisterRequest registerRequest) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setCreated(Instant.now());
-        user.setEnabled(true);
-        userRepository.save(user);
+    public ResponseEntity<String> signup(RegisterRequest registerRequest) {
 
-        String token = generateVerificationToken(user);
-        mailService.sendMail(new NotificationEmail("Please Activate your Account",
-                                                   user.getEmail(), "Thank you for signing up to Spring Reddit, " +
-                                                                    "please click on the below url to activate your account : " +
-                                                                    "<a href://http://localhost:8080/api/auth/accountVerification/" + token + "> Activate account link</a>"));
+        Optional<User> userExist = userRepository.findByUsername(registerRequest.getUsername());
+        System.out.println(userExist);
+        if(!userExist.isEmpty())
+        {
+            return new ResponseEntity<>("User exist. PLease select another name", CONFLICT);
+        }
+        else {
+            User user = new User();
+            user.setUsername(registerRequest.getUsername());
+            user.setEmail(registerRequest.getEmail());
+            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            user.setCreated(Instant.now());
+            user.setEnabled(true);
+            userRepository.save(user);
+
+            String token = generateVerificationToken(user);
+            mailService.sendMail(new NotificationEmail("Please Activate your Account",
+                                                       user.getEmail(), "Thank you for signing up to Spring Reddit, " +
+                                                                        "please click on the below url to activate your account : " +
+                                                                        "<a href://http://localhost:8080/api/auth/accountVerification/" + token + "> Activate account link</a>"));
+
+        }
+        return new ResponseEntity<>("Success registration", OK);
     }
 
     @Transactional(readOnly = true)
@@ -170,7 +185,7 @@ public class AuthService {
                                                             .registerStoredProcedureParameter("newUserName", String.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("newEmail", String.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("newPassword", String.class, ParameterMode.IN)
-                                                            .setParameter("postId", getCurrentUser().getId())
+                                                            .setParameter("currentUserId", getCurrentUser().getId())
                                                             .setParameter("userId", userInfo.getUserid())
                                                             .setParameter("newUserName", userInfo.getUsername())
                                                             .setParameter("newEmail", userInfo.getEmail())

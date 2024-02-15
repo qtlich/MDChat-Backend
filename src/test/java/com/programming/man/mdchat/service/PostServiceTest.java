@@ -1,34 +1,24 @@
 package com.programming.man.mdchat.service;
 
-import com.programming.man.mdchat.dto.PostResponse;
 import com.programming.man.mdchat.mapper.OperationResultMapper;
 import com.programming.man.mdchat.mapper.PostMapper;
 import com.programming.man.mdchat.model.Post;
 import com.programming.man.mdchat.repository.ChannelRepository;
-import com.programming.man.mdchat.repository.OperationResultRepository;
 import com.programming.man.mdchat.repository.PostRepository;
 import com.programming.man.mdchat.repository.UserRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
-    @Mock
-    private OperationResultRepository operationResultRepository;
     @Mock
     private OperationResultMapper operationResultMapper;
     @Mock

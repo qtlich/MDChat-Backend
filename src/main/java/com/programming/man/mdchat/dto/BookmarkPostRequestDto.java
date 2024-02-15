@@ -1,6 +1,5 @@
 package com.programming.man.mdchat.dto;
 
-import com.programming.man.mdchat.model.VoteType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VoteDto {
-    private VoteType voteType;
+public class BookmarkPostRequestDto {
     private Long postId;
+    private Boolean bookmarkPost;
 }

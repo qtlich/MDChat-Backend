@@ -1,37 +1,71 @@
 package com.programming.man.mdchat.service;
 
-import com.programming.man.mdchat.dto.ChannelDto;
-import com.programming.man.mdchat.dto.SearchChannelsResponseDto;
+import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.exceptions.SpringMDChatException;
 import com.programming.man.mdchat.mapper.ChannelMapper;
 import com.programming.man.mdchat.model.Channel;
 import com.programming.man.mdchat.repository.ChannelRepository;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.TupleElement;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.procedure.ProcedureOutputs;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static org.springframework.http.ResponseEntity.status;
 
 @Service
 @AllArgsConstructor
 @Slf4j
 public class ChannelService {
 
+    @PersistenceContext(name = "MDCHAT")
+    private EntityManager entityManager;
     private final ChannelRepository channelRepository;
     private final ChannelMapper channelMapper;
     private final AuthService authService;
 
-    @Transactional
-    public ChannelDto save(ChannelDto channelDto) {
-        Channel save = channelRepository.save(channelMapper.mapDtoToChannel(channelDto, authService.getCurrentUser()));
-        channelDto.setId(save.getId());
-        return channelDto;
+    @Transactional(readOnly = false)
+    public List<ChannelCUDResponse> channelCUD(ChannelCUDRequest request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("channelCUD")
+                                                            .registerStoredProcedureParameter("p_operationType", Integer.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_channelId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_channelType", Short.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_channelName", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_channelDescription", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_Deleted", Boolean.class, ParameterMode.IN)
+                                                            .setParameter("p_operationType", request.getOperationType())
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_channelId", request.getChannelId())
+                                                            .setParameter("p_channelType", request.getChannelTypeId())
+                                                            .setParameter("p_channelName", request.getChannelName())
+                                                            .setParameter("p_channelDescription", request.getChannelDescription())
+                                                            .setParameter("p_Deleted", request.getDeleted());
+        List<ChannelCUDResponse> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new ChannelCUDResponse((Long) item[0], //id
+                                                                               (String) item[1]))//message
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)

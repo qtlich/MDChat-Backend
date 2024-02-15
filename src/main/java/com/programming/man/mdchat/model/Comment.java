@@ -16,6 +16,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long parentId;
     @NotNull
     @Lob
     @Column(columnDefinition = "LONGTEXT")
@@ -36,7 +37,9 @@ public class Comment {
     private Integer voteCount = 0;
     @NotNull
     private Instant created;
+    private Instant modified;
     @NotNull
     @Builder.Default
     private boolean commentsClosed = false;
+    private Boolean deleted = false;
 }

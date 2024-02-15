@@ -1,7 +1,6 @@
 package com.programming.man.mdchat.controller;
 
 import com.programming.man.mdchat.dto.*;
-import com.programming.man.mdchat.model.Post;
 import com.programming.man.mdchat.service.PostService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,42 +22,39 @@ public class PostController {
     @Autowired
     private final PostService postService;
 
-    @PostMapping(value = "create")
-    public ResponseEntity<Post> createPost(@RequestBody PostRequest postRequest) {
-        return status(HttpStatus.OK).body(postService.save(postRequest));
-    }
-
     @PostMapping(value = "cud") //posts/cud
     public ResponseEntity<List<PostCUDResponse>> createPost(@RequestBody PostCUDRequest postCUDRequest) {
         return status(HttpStatus.OK).body(postService.postCUD(postCUDRequest));
     }
 
-    @GetMapping(value = "all")
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
-        return status(HttpStatus.OK).body(postService.getAllPosts());
-    }
-    @PostMapping(value = "v1/all")
-    public ResponseEntity<List<GetAllPostsResponse>> getAllPostsV1(@RequestBody GetAllPostsRequest request) {
-        return status(HttpStatus.OK).body(postService.getAllPostsV1(request));
+    @PostMapping(value = "universal-posts")
+    public ResponseEntity<List<GetAllUserPostsUniversalResponse>> getUserPostHistory(@RequestBody GetAllUserPostsUniversalRequest request) {
+        return status(HttpStatus.OK).body(postService.getUserPostsUniversal(request));
     }
 
-    @GetMapping(value = "by-id/{id}")
-    public ResponseEntity<PostResponse> getPost(@PathVariable Long id) {
-        return status(HttpStatus.OK).body(postService.getPost(id));
+    @PostMapping(value = "view-post")
+    public ResponseEntity<List<GetPostByIdResponseDto>> getPost(@RequestBody GetPostByIdRequestDto request) {
+        return status(HttpStatus.OK).body(postService.getPostById(request));
+    }
+    @GetMapping(value = "get-comments-count/{id}")
+    public ResponseEntity<Long> getCommentsCount(@PathVariable Long id) {
+        return status(HttpStatus.OK).body(postService.getCommentsCount(id));
     }
 
-    //    @GetMapping(value = "by-channel/{channelId}")
-//    public  ResponseEntity<List<Post>> getPostsByChannel(@PathVariable Long channelId) {
-//        return status(HttpStatus.OK).body(this.postService.selectChannelPosts(channelId));
-//    }
+    @PostMapping(value = "hide-post")
+    public ResponseEntity<List<ShowHidePostResponseDto>>  showHidePost(@RequestBody ShowHidePostRequestDto request)
+    {
+        return status(HttpStatus.OK).body(postService.showHidePost(request));
+    }
+    @PostMapping(value = "bookmark-post")
+    public ResponseEntity<List<BookmarkPostResponseDto>>  saveUnsavePost(@RequestBody BookmarkPostRequestDto request)
+    {
+        return status(HttpStatus.OK).body(postService.bookmarkPost(request));
+    }
+
     @GetMapping(value = "chposts/{id}")
     public ResponseEntity<List<PostResponse>> getPostsByChannel(@PathVariable Long id) {
         return status(HttpStatus.OK).body(postService.getPostsByChannel(id));
-    }
-
-    @PostMapping(value = "delete/{postId}")
-    public ResponseEntity<List<OperationResultDto>> deletePostByPostId(@PathVariable Long postId) {
-        return status(HttpStatus.OK).body(postService.deletePostById(postId));
     }
 
     @GetMapping(value = "by-user/{username}")

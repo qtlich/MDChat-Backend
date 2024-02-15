@@ -18,5 +18,5 @@ public class RegisterRequest {
     private String username;
     @NotBlank(message = "Password is required")
     private String password;
-
+    private String about;
 }

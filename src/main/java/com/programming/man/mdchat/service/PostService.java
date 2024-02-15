@@ -1,20 +1,13 @@
 package com.programming.man.mdchat.service;
 
 import com.programming.man.mdchat.dto.*;
-import com.programming.man.mdchat.exceptions.ChannelNotFoundException;
-import com.programming.man.mdchat.exceptions.PostNotFoundException;
 import com.programming.man.mdchat.mapper.PostMapper;
-import com.programming.man.mdchat.model.Channel;
 import com.programming.man.mdchat.model.Post;
 import com.programming.man.mdchat.model.User;
 import com.programming.man.mdchat.repository.ChannelRepository;
-import com.programming.man.mdchat.repository.OperationResultRepository;
 import com.programming.man.mdchat.repository.PostRepository;
 import com.programming.man.mdchat.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.ParameterMode;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.procedure.ProcedureOutputs;
@@ -35,17 +28,10 @@ public class PostService {
     @PersistenceContext(name = "MDCHAT")
     private EntityManager entityManager;
     private PostRepository postRepository;
-    private OperationResultRepository operationResultRepository;
     private ChannelRepository channelRepository;
     private UserRepository userRepository;
     private AuthService authService;
     private PostMapper postMapper;
-
-    public Post save(PostRequest postRequest) {
-        Channel channel = channelRepository.findById(postRequest.getChannelId())
-                                           .orElseThrow(() -> new ChannelNotFoundException(postRequest.getChannelName()));
-        return postRepository.save(postMapper.map(postRequest, channel, authService.getCurrentUser()));
-    }
 
     @Transactional(readOnly = false)
     public List<PostCUDResponse> postCUD(PostCUDRequest postRequest) {
@@ -83,37 +69,16 @@ public class PostService {
         return result;
     }
 
-    @Transactional(readOnly = true)
-    public PostResponse getPost(Long id) {
-        Post post = postRepository.findById(id)
-                                  .orElseThrow(() -> new PostNotFoundException(id.toString()));
-        return postMapper.mapToDto(post);
-    }
-
-    @Transactional(readOnly = true)
-    public List<PostResponse> getAllPosts() {
-        return postRepository.findAll()
-                             .stream()
-                             .map(postMapper::mapToDto)
-                             .collect(toList());
-    }
-
     @Transactional(readOnly = false)
-    public List<GetAllPostsResponse> getAllPostsV1(GetAllPostsRequest request) {
-        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getPosts")
+    public List<ShowHidePostResponseDto> showHidePost(ShowHidePostRequestDto postRequest) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("showHidePost")
                                                             .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_sortMode", String.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_offset", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_limit", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_postNameMaxLength", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_postDescriptionMaxLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_showPost", Boolean.class, ParameterMode.IN)
                                                             .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
-                                                            .setParameter("p_sortMode", request.getSortMode())
-                                                            .setParameter("p_offset", request.getOffset())
-                                                            .setParameter("p_limit", request.getLimit())
-                                                            .setParameter("p_postNameMaxLength", request.getPostNameMaxLength())
-                                                            .setParameter("p_postDescriptionMaxLength", request.getPostDescriptionMaxLength());
-        List<GetAllPostsResponse> result;
+                                                            .setParameter("p_postId", postRequest.getPostId())
+                                                            .setParameter("p_showPost", postRequest.getShowPost());
+        List<ShowHidePostResponseDto> result;
         try {
             List<Object[]> resultObjects = storedProcedure.getResultList();
 
@@ -121,61 +86,154 @@ public class PostService {
                 result = new ArrayList();
             } else
                 result = resultObjects.stream()
-                                      .map(item -> new GetAllPostsResponse((Long) item[0], //postId
-                                                                           authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : (Long) null, //userId
-                                                                           (Long) item[1], //postChannelId
-                                                                           (Short) item[2],//channelType
-                                                                           (String) item[3],//channelName
-                                                                           (String) item[4],//channelDescription
-                                                                           (Long) item[5],//postUseId
-                                                                           (String) item[6],//postUserName
-                                                                           (String) item[7],//postName
-                                                                           (String) item[8],//postDescription
-                                                                           (Integer) item[9],//postVoteCount
-                                                                           (String) item[10],//postCreated
-                                                                           (String) item[11],//postModified
-                                                                           (String) item[12],//postUrl
-                                                                           (Integer) item[13],//currentUserVoteType
-                                                                           (Integer) item[14],//postCountComments
-                                                                           (String) item[15]))//posttimeAgo
+                                      .map(item -> new ShowHidePostResponseDto((Long) item[0], //id
+                                                                               (String) item[1]))//message
                                       .collect(Collectors.toList());
         } finally {
             storedProcedure.unwrap(ProcedureOutputs.class).release();
         }
         return result;
     }
+
+    @Transactional(readOnly = false)
+    public List<BookmarkPostResponseDto> bookmarkPost(BookmarkPostRequestDto postRequest) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("saveUnsaveUserPost")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_savePost", Boolean.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_postId", postRequest.getPostId())
+                                                            .setParameter("p_savePost", postRequest.getBookmarkPost());
+        List<BookmarkPostResponseDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new BookmarkPostResponseDto((Long) item[0], //id
+                                                                               (String) item[1]))//message
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = false)
+    public List<GetPostByIdResponseDto> getPostById(GetPostByIdRequestDto request) {
+
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getPost")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_postId", request.getPostId());
+
+        List<GetPostByIdResponseDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new GetPostByIdResponseDto((Long) item[0],
+                                                                              (Long) item[1],
+                                                                              (Short) item[2],
+                                                                              (String) item[3],
+                                                                              (String) item[4],
+                                                                              (Long) item[5],
+                                                                              (String) item[6],
+                                                                              (String) item[7],
+                                                                              (String) item[8],
+                                                                              (String) item[9],
+                                                                              (Integer) item[10],
+                                                                              (Long) item[11],
+                                                                              (String) item[12],
+                                                                              (String) item[13],
+                                                                              (String) item[14],
+                                                                              (String) item[15],
+                                                                              (Boolean) item[16],
+                                                                              (Boolean) item[17],
+                                                                              (Boolean) item[18]))//message
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+
+    }
+
+
+    @Transactional(readOnly = false)
+    public Long getCommentsCount(Long postId) {
+        Query query = entityManager
+                .createNativeQuery("SELECT getPostCountComments(?1)")
+                .setParameter(1, postId);
+        return ((Long) query.getSingleResult()).longValue();
+    }
+
+    @Transactional(readOnly = false)
+    public List<GetAllUserPostsUniversalResponse> getUserPostsUniversal(GetAllUserPostsUniversalRequest request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getUserPostsUniversal")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("selectedUserView", Integer.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_sortMode", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_offset", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_limit", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postNameMaxLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postDescriptionMaxLength", Long.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", request.getUserId() != null ? request.getUserId() : authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("selectedUserView", request.getSelectedUserView())
+                                                            .setParameter("p_sortMode", request.getSortMode())
+                                                            .setParameter("p_offset", request.getOffset())
+                                                            .setParameter("p_limit", request.getLimit())
+                                                            .setParameter("p_postNameMaxLength", request.getPostNameMaxLength())
+                                                            .setParameter("p_postDescriptionMaxLength", request.getPostDescriptionMaxLength());
+        List<GetAllUserPostsUniversalResponse> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new GetAllUserPostsUniversalResponse((Long) item[0], //postId
+                                                                                        (Long) item[1], //postChannelId
+                                                                                        (Short) item[2],//channelType
+                                                                                        (String) item[3],//channelName
+                                                                                        (String) item[4],//channelDescription
+                                                                                        (Long) item[5],//postUserId
+                                                                                        (String) item[6],//postUserName
+                                                                                        (String) item[7],//postName
+                                                                                        (String) item[8],//postDescription
+                                                                                        (Integer) item[9],//postVoteCount
+                                                                                        (String) item[10],//postCreated
+                                                                                        (String) item[11],//postModified
+                                                                                        (String) item[12],//postUrl
+                                                                                        (Integer) item[13],//currentUserVoteType
+                                                                                        (Long) item[14],//postCountComments
+                                                                                        (String) item[15],//posttimeAgo
+                                                                                        (String) item[16],//lastVisaited
+                                                                                        (Boolean) item[17],//hidden
+                                                                                        (Boolean) item[18],//saved
+                                                                                        (Boolean) item[19],//canEdit
+                                                                                        (Boolean) item[20]))//canDelete
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+    }
+
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPostsByChannel(Long channelId) {
         List<Post> posts = postRepository.getChannelsPosts(channelId, authService.getCurrentUser().getId());
         return posts.stream().map(postMapper::mapToDto).collect(toList());
     }
-
-    @Transactional
-    public List<OperationResultDto> deletePostById(Long postId) {
-        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("deletePost")
-                                                            .registerStoredProcedureParameter("postId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("userId", Long.class, ParameterMode.IN)
-                                                            .setParameter("postId", postId)
-                                                            .setParameter("userId", authService.getCurrentUser().getId());
-        List<OperationResultDto> result;
-        try {
-            List<Object[]> resultObjects = storedProcedure.getResultList();
-            if (resultObjects == null) {
-                result = new ArrayList();
-                result.add(new OperationResultDto(-postId, "Can't delete post"));
-            } else
-
-                result = resultObjects.stream()
-                                      .map(item -> new OperationResultDto((Long) item[0],
-                                                                          (String) item[1]))
-                                      .collect(Collectors.toList());
-        } finally {
-            storedProcedure.unwrap(ProcedureOutputs.class).release();
-        }
-        return result;
-    }
-
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPostsByUsername(String username) {

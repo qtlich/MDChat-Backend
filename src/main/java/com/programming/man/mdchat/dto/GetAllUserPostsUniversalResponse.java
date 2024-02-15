@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetAllPostsResponse {
+public class GetAllUserPostsUniversalResponse {
     private Long postId;
-    private Long userId;
     private Long postChannelId;
     private Short channelType;
     private String channelName;
@@ -25,6 +24,9 @@ public class GetAllPostsResponse {
     private Integer currentUserVoteType;
     private Long postCountComments;
     private String postTimeAgo;
+    private String lastVisited;
+    private Boolean hidden;
+    private Boolean saved;
     private Boolean canEdit;
     private Boolean canDelete;
 }

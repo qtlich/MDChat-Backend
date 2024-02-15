@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class GetCountPostVotesRequestDto {
+@NoArgsConstructor
+public class GetPostByIdRequestDto {
     private Long postId;
-    private Long commentId;
 }

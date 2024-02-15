@@ -1,26 +1,34 @@
 package com.programming.man.mdchat.service;
 
-import com.programming.man.mdchat.dto.CommentsDto;
+import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.exceptions.PostNotFoundException;
 import com.programming.man.mdchat.exceptions.SpringMDChatException;
 import com.programming.man.mdchat.mapper.CommentMapper;
-import com.programming.man.mdchat.model.Comment;
 import com.programming.man.mdchat.model.NotificationEmail;
 import com.programming.man.mdchat.model.Post;
 import com.programming.man.mdchat.model.User;
 import com.programming.man.mdchat.repository.CommentRepository;
 import com.programming.man.mdchat.repository.PostRepository;
 import com.programming.man.mdchat.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.StoredProcedureQuery;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.procedure.ProcedureOutputs;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class CommentService {
+    @PersistenceContext(name = "MDCHAT")
+    private EntityManager entityManager;
     private static final String POST_URL = "";
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -30,14 +38,86 @@ public class CommentService {
     private final MailContentBuilder mailContentBuilder;
     private final MailService mailService;
 
-    public void save(CommentsDto commentsDto) {
-        Post post = postRepository.findById(commentsDto.getPostId())
-                .orElseThrow(() -> new PostNotFoundException(commentsDto.getPostId().toString()));
-        Comment comment = commentMapper.map(commentsDto, post, authService.getCurrentUser());
-        commentRepository.save(comment);
+    @Transactional(readOnly = false)
+    public List<GetAllCommentsResponseDto> getAllPostComments(GetAllCommentsRequestDto request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getComments")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_commentId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_sortMode", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_offset", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_limit", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_commentMaxLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_showDeleted", Boolean.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_commentId", request.getCommentId())
+                                                            .setParameter("p_postId", request.getPostId())
+                                                            .setParameter("p_sortMode", request.getSortMode())
+                                                            .setParameter("p_offset", request.getOffset())
+                                                            .setParameter("p_limit", request.getLimit())
+                                                            .setParameter("p_commentMaxLength", request.getCommentMaxLength())
+                                                            .setParameter("p_showDeleted", request.getShowDeleted());
+        List<GetAllCommentsResponseDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
 
-        String message = mailContentBuilder.build(post.getUser().getUsername() + " posted a comment on your post." + POST_URL);
-        sendCommentNotification(message, post.getUser());
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new GetAllCommentsResponseDto((Long) item[0], //id
+                                                                                 (Long) item[1],
+                                                                                 (String) item[2],
+                                                                                 (Long) item[3],
+                                                                                 (Long) item[4],
+                                                                                 (String) item[5],
+                                                                                 (Integer) item[6],
+                                                                                 (Integer) item[7],
+                                                                                 (Boolean) item[8],
+                                                                                 (String) item[9],
+                                                                                 (String) item[10],
+                                                                                 (String) item[11],
+                                                                                 (String) item[12],
+                                                                                 (Boolean) item[13],
+                                                                                 (Boolean) item[14],
+                                                                                 (Boolean) item[15]))
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = false)
+    public List<CommentCUDResponse> commentCUD(CommentCUDRequest commentRequest) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("commentCUD")
+                                                            .registerStoredProcedureParameter("p_operationType", Integer.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_commentId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_parentId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_comment", String.class, ParameterMode.IN)
+                                                            .setParameter("p_operationType", commentRequest.getOperationType())
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_commentId", commentRequest.getCommentId())
+                                                            .setParameter("p_parentId", commentRequest.getParentId())
+                                                            .setParameter("p_postId", commentRequest.getPostId())
+                                                            .setParameter("p_comment", commentRequest.getComment());
+        List<CommentCUDResponse> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new CommentCUDResponse((Long) item[0], //id
+                                                                          (String) item[1]))//message
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
     }
 
     private void sendCommentNotification(String message, User user) {
@@ -47,17 +127,17 @@ public class CommentService {
     public List<CommentsDto> getAllCommentsForPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId.toString()));
         return commentRepository.findByPost(post)
-                .stream()
-                .map(commentMapper::mapToDto).toList();
+                                .stream()
+                                .map(commentMapper::mapToDto).toList();
     }
 
     public List<CommentsDto> getAllCommentsForUser(String userName) {
         User user = userRepository.findByUsername(userName)
-                .orElseThrow(() -> new UsernameNotFoundException(userName));
+                                  .orElseThrow(() -> new UsernameNotFoundException(userName));
         return commentRepository.findAllByUser(user)
-                .stream()
-                .map(commentMapper::mapToDto)
-                .toList();
+                                .stream()
+                                .map(commentMapper::mapToDto)
+                                .toList();
     }
 
     public boolean containsSwearWords(String comment) {

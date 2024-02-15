@@ -7,12 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetUserPostVotesResponseDto {
+public class VoteRequestV1Dto {
     private Long postId;
     private Long commentId;
-    private boolean isVoted;
-    private Long countVotes;
-    private boolean upVoted;
-    private boolean downVoted;
-    private String momentVoted;
+    private Integer voteType;
 }

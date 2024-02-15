@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VoteRequestDto {
-    private Short voteType;
+public class ShowHidePostRequestDto {
     private Long postId;
-    private Long commentId;
+    private Boolean showPost;
 }

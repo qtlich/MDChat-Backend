@@ -61,4 +61,6 @@ public class Channel implements Serializable {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
+    private Boolean deleted;
+    private Boolean modified;
 }

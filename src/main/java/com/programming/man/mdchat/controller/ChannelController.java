@@ -1,9 +1,7 @@
 package com.programming.man.mdchat.controller;
 
-import com.programming.man.mdchat.dto.ChannelDto;
-import com.programming.man.mdchat.dto.CommentsDto;
-import com.programming.man.mdchat.dto.SearchChannelsRequestDto;
-import com.programming.man.mdchat.dto.SearchChannelsResponseDto;
+import com.programming.man.mdchat.dto.*;
+import com.programming.man.mdchat.service.AuthService;
 import com.programming.man.mdchat.service.ChannelService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @RequestMapping("/api/channel")
@@ -24,10 +23,9 @@ public class ChannelController {
 
     private final ChannelService channelService;
 
-    @PostMapping("/create")
-    public ResponseEntity<ChannelDto> createChannel(@RequestBody ChannelDto channelDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(channelService.save(channelDto));
+    @PostMapping(value = "cud") //channel/cud
+    public ResponseEntity<List<ChannelCUDResponse>> createPost(@RequestBody ChannelCUDRequest request) {
+        return status(HttpStatus.OK).body(channelService.channelCUD(request));
     }
 
     @GetMapping("/all")
