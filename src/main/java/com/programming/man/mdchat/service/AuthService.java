@@ -53,13 +53,6 @@ public class AuthService {
 
     public ResponseEntity<String> signup(RegisterRequest registerRequest) {
 
-        Optional<User> userExist = userRepository.findByUsername(registerRequest.getUsername());
-        System.out.println(userExist);
-        if(!userExist.isEmpty())
-        {
-            return new ResponseEntity<>("User exist. PLease select another name", CONFLICT);
-        }
-        else {
             User user = new User();
             user.setUsername(registerRequest.getUsername());
             user.setEmail(registerRequest.getEmail());
@@ -69,12 +62,11 @@ public class AuthService {
             userRepository.save(user);
 
             String token = generateVerificationToken(user);
-            mailService.sendMail(new NotificationEmail("Please Activate your Account",
-                                                       user.getEmail(), "Thank you for signing up to Spring Reddit, " +
-                                                                        "please click on the below url to activate your account : " +
-                                                                        "<a href://http://localhost:8080/api/auth/accountVerification/" + token + "> Activate account link</a>"));
+//            mailService.sendMail(new NotificationEmail("Please Activate your Account",
+//                                                       user.getEmail(), "Thank you for signing up to Spring Reddit, " +
+//                                                                        "please click on the below url to activate your account : " +
+//                                                                        "<a href://http://localhost:8080/api/auth/accountVerification/" + token + "> Activate account link</a>"));
 
-        }
         return new ResponseEntity<>("Success registration", OK);
     }
 
