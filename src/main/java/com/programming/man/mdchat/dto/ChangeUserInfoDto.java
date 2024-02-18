@@ -17,4 +17,5 @@ public class ChangeUserInfoDto
     private String username;
     private String email;
     private String password;
+    private String description;
 }

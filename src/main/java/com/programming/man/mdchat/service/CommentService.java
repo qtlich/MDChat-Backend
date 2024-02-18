@@ -120,6 +120,59 @@ public class CommentService {
         return result;
     }
 
+    @Transactional(readOnly = false)
+    public List<GetUserCommentsUniversalResponse> getUserCommentsUniversal(GetUserCommentsUniversalRequest request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("getUserCommentsUniversal")
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("selectedUserView", Integer.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_sortMode", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_offset", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_limit", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_commentMaxTextLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postNameMaxLength", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_postDescriptionMaxLength", Long.class, ParameterMode.IN)
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
+                                                            .setParameter("selectedUserView", request.getSelectedUserView())
+                                                            .setParameter("p_sortMode", request.getSortMode())
+                                                            .setParameter("p_offset", request.getOffset())
+                                                            .setParameter("p_limit", request.getLimit())
+                                                            .setParameter("p_commentMaxTextLength", request.getCommentMaxTextLength())
+                                                            .setParameter("p_postNameMaxLength", request.getPostNameMaxLength())
+                                                            .setParameter("p_postDescriptionMaxLength", request.getPostDescriptionMaxLength());
+        List<GetUserCommentsUniversalResponse> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+
+            if (resultObjects == null) {
+                result = new ArrayList();
+            } else
+                result = resultObjects.stream()
+                                      .map(item -> new GetUserCommentsUniversalResponse((Long) item[0],//commentId
+                                                                                        (Long) item[1],//commentParentId
+                                                                                        (Long) item[2],//channelId
+                                                                                        (String) item[3],//channelName
+                                                                                        (Long) item[4],//postId
+                                                                                        (String) item[5],//postName
+                                                                                        (String) item[6],//postDescription
+                                                                                        (Long) item[7],//commentUserId
+                                                                                        (String) item[8],//commentUserName
+                                                                                        (String) item[9], //commentText
+                                                                                        (String) item[10], //commentCreated
+                                                                                        (String) item[11], //commentModified
+                                                                                        (Integer) item[12], //commentVoteCount
+                                                                                        (Boolean) item[13], //commentsClosed
+                                                                                        (Integer) item[14], //commentClaimsCount
+                                                                                        (String) item[15], //commentTimeAgo
+                                                                                        (Boolean) item[16], //canEdit
+                                                                                        (Boolean) item[17], //canDelete
+                                                                                        (Boolean) item[18])) //isDeleted
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
+    }
+
     private void sendCommentNotification(String message, User user) {
         mailService.sendMail(new NotificationEmail(user.getUsername() + " Commented on your post", user.getEmail(), message));
     }

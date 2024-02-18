@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,37 +52,46 @@ public class SecurityConfig {
         return httpSecurity
 //                .cors().and()
 .csrf().disable()
+
 .authorizeRequests(authorize -> authorize
-        .requestMatchers("/api/posts/**").permitAll()
-//        .requestMatchers("/api/posts/view-post").permitAll()
-        .requestMatchers("/api/auth/**").permitAll()
-        .requestMatchers("/api/auth/signup").permitAll()
-//        .requestMatchers("/api/posts/chposts/**").permitAll()
-//        .requestMatchers("/api/posts/by-id/**").permitAll()
-//        .requestMatchers("/api/posts/universal-posts").permitAll()
-        .requestMatchers("/api/channel/**").permitAll()
-        .requestMatchers("/api/channel/search").permitAll()
-        .requestMatchers("/api/comments/**").permitAll()
-        .requestMatchers("/api/votes/**").permitAll()
-        .requestMatchers("/api/file/**").permitAll()
-        .requestMatchers("/api/file/upload/**").permitAll()
-        .requestMatchers("/api/comments/by-post/**").permitAll()
-
-        .requestMatchers("/api/channel/create")
-
-
-
-        .permitAll()
-        .requestMatchers("/v3/api-docs/**",
-                         "/configuration/ui",
-                         "/swagger-resources/**",
-//                                            "/configuration/security",
+                           .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                           .requestMatchers("/api/auth/**",
+                                            "/api/auth/signup",
+                                            "/api/auth/login",
+                                            "/api/auth/logout",
+                                            "/api/auth/changeuserinfo",
+                                            "/api/auth/getusersinfo").permitAll()
+                           .requestMatchers("/api/posts/**").permitAll()
+                           .requestMatchers("/api/posts/all").permitAll()
+                           .requestMatchers("/api/posts/v1/all").permitAll()
+                           .requestMatchers("/api/posts/cud").authenticated()
+                           .requestMatchers("/api/channel/**").permitAll()
+                           .requestMatchers("/api/comments/**",
+                                            "/api/comments/cud",
+                                            "/api/comments/universal-comments",
+                                            "/api/comments/by-post/**",
+                                            "/api/comments/by-post").permitAll()
+                           .requestMatchers("/api/votes/**").permitAll()
+                           .requestMatchers("/api/channel/search").permitAll()
+                           .requestMatchers("/api/posts/chposts/**").permitAll()
+                           .requestMatchers("/api/file/**").permitAll()
+                           .requestMatchers("/api/file/upload/**").permitAll()
+                           .requestMatchers("/api/posts/by-id/**").permitAll()
+                           .requestMatchers("/api/comments/by-post/**")
+                           .permitAll()
+                           .requestMatchers("/api/channel/create")
+                           .permitAll()
+                           .requestMatchers("/v3/api-docs/**",
+                                            "/configuration/ui",
+                                            "/swagger-resources/**",
+                                            "/configuration/security",
 //                                            "/swagger-ui/**",
-                         "/webjars/**"
-                        )
-        .permitAll()
-        .anyRequest()
-        .authenticated())
+                                            "/webjars/**"
+                                           )
+                           .permitAll()
+                           .anyRequest()
+                           .authenticated()
+                  )
 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 .exceptionHandling(exceptions -> exceptions

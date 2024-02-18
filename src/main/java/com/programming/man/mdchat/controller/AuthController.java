@@ -6,12 +6,14 @@ import com.programming.man.mdchat.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,8 +27,8 @@ public class AuthController {
 
     @CrossOrigin()
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
-        return authService.signup(registerRequest);
+    public ResponseEntity<List<OperationResultDto>> signup(@RequestBody SignupUserRequest request) {
+        return status(HttpStatus.OK).body(authService.signup(request));
     }
 
     @GetMapping("accountVerification/{token}")

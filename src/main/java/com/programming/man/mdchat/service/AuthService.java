@@ -2,7 +2,6 @@ package com.programming.man.mdchat.service;
 
 import com.programming.man.mdchat.dto.*;
 import com.programming.man.mdchat.exceptions.SpringMDChatException;
-import com.programming.man.mdchat.model.NotificationEmail;
 import com.programming.man.mdchat.model.User;
 import com.programming.man.mdchat.model.VerificationToken;
 import com.programming.man.mdchat.repository.UserRepository;
@@ -14,7 +13,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.AllArgsConstructor;
 import org.hibernate.procedure.ProcedureOutputs;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,9 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.OK;
-
 @Service
 @AllArgsConstructor
 @Transactional
@@ -51,24 +46,37 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    public ResponseEntity<String> signup(RegisterRequest registerRequest) {
+    @Transactional(readOnly = false)
+    public List<OperationResultDto> signup(SignupUserRequest request) {
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("signUpUser")
+                                                            .registerStoredProcedureParameter("p_currentUserId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_userName", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_email", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_password", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_description", String.class, ParameterMode.IN)
+                                                            .setParameter("p_currentUserId", isLoggedIn() ? getCurrentUser().getId() : null)
+                                                            .setParameter("p_userName", request.getUsername())
+                                                            .setParameter("p_email", request.getEmail())
+                                                            .setParameter("p_password",  passwordEncoder.encode(request.getPassword()))
+                                                            .setParameter("p_description",request.getDescription());
+        List<OperationResultDto> result;
+        try {
+            List<Object[]> resultObjects = storedProcedure.getResultList();
+            if (resultObjects == null) {
+                result = new ArrayList();
+                result.add(new OperationResultDto(-1L, "Can't change user info"));
+            } else
 
-            User user = new User();
-            user.setUsername(registerRequest.getUsername());
-            user.setEmail(registerRequest.getEmail());
-            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-            user.setCreated(Instant.now());
-            user.setEnabled(true);
-            userRepository.save(user);
-
-            String token = generateVerificationToken(user);
-//            mailService.sendMail(new NotificationEmail("Please Activate your Account",
-//                                                       user.getEmail(), "Thank you for signing up to Spring Reddit, " +
-//                                                                        "please click on the below url to activate your account : " +
-//                                                                        "<a href://http://localhost:8080/api/auth/accountVerification/" + token + "> Activate account link</a>"));
-
-        return new ResponseEntity<>("Success registration", OK);
+                result = resultObjects.stream()
+                                      .map(item -> new OperationResultDto((Long) item[0],
+                                                                          (String) item[1]))
+                                      .collect(Collectors.toList());
+        } finally {
+            storedProcedure.unwrap(ProcedureOutputs.class).release();
+        }
+        return result;
     }
+
 
     @Transactional(readOnly = true)
     public User getCurrentUser() {
@@ -106,8 +114,6 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         String token = jwtProvider.generateToken(authenticate);
 //        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        System.out.println("getCurrentUser().getId()");
-//        System.out.println(getCurrentUser());
         return AuthenticationResponse.builder()
                                      .authenticationToken(token)
                                      .refreshToken(refreshTokenService.generateRefreshToken().getToken())
@@ -170,18 +176,20 @@ public class AuthService {
     }
 
     @Transactional
-    public List<OperationResultDto> changeUserInfo(ChangeUserInfoDto userInfo) {
+    public List<OperationResultDto> changeUserInfo(ChangeUserInfoDto request) {
         StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("changeUserInfo")
-                                                            .registerStoredProcedureParameter("currentUserId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("userId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("newUserName", String.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("newEmail", String.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("newPassword", String.class, ParameterMode.IN)
-                                                            .setParameter("currentUserId", getCurrentUser().getId())
-                                                            .setParameter("userId", userInfo.getUserid())
-                                                            .setParameter("newUserName", userInfo.getUsername())
-                                                            .setParameter("newEmail", userInfo.getEmail())
-                                                            .setParameter("newPassword", passwordEncoder.encode(userInfo.getPassword()));
+                                                            .registerStoredProcedureParameter("p_currentUserId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_newUserName", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_newEmail", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_newPassword", String.class, ParameterMode.IN)
+                                                            .registerStoredProcedureParameter("p_description", String.class, ParameterMode.IN)
+                                                            .setParameter("p_currentUserId", isLoggedIn() ? getCurrentUser().getId() : null)
+                                                            .setParameter("p_userId", request.getUserid())
+                                                            .setParameter("p_newUserName", request.getUsername())
+                                                            .setParameter("p_newEmail", request.getEmail())
+                                                            .setParameter("p_newPassword", passwordEncoder.encode(request.getPassword()))
+                                                            .setParameter("p_description", request.getDescription());
         List<OperationResultDto> result;
         try {
             List<Object[]> resultObjects = storedProcedure.getResultList();

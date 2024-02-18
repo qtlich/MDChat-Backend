@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterRequest {
+public class SignupUserRequest {
     @Email
     @NotEmpty(message = "Email is required")
     private String email;
@@ -18,5 +18,5 @@ public class RegisterRequest {
     private String username;
     @NotBlank(message = "Password is required")
     private String password;
-    private String about;
+    private String description;
 }

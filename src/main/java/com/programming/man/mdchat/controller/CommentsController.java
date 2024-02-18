@@ -19,14 +19,14 @@ import static org.springframework.http.ResponseEntity.status;
 public class CommentsController {
     private final CommentService commentService;
 
-    //    @PostMapping(value = "create")
-//    public ResponseEntity<Void> createComment(@RequestBody CommentsDto commentsDto) {
-//        commentService.save(commentsDto);
-//        return new ResponseEntity<>(CREATED);
-//    }
     @PostMapping(value = "cud") //comments/cud
     public ResponseEntity<List<CommentCUDResponse>> createPost(@RequestBody CommentCUDRequest commentCUDRequest) {
         return status(HttpStatus.OK).body(commentService.commentCUD(commentCUDRequest));
+    }
+
+    @PostMapping(value = "universal-comments")
+    public ResponseEntity<List<GetUserCommentsUniversalResponse>> getUserPostHistory(@RequestBody GetUserCommentsUniversalRequest request) {
+        return status(HttpStatus.OK).body(commentService.getUserCommentsUniversal(request));
     }
 
     @GetMapping(value = "by-post/{postId}")
@@ -38,11 +38,4 @@ public class CommentsController {
     public ResponseEntity<List<GetAllCommentsResponseDto>> getAllPostComments(@RequestBody GetAllCommentsRequestDto request) {
         return ResponseEntity.status(OK).body(commentService.getAllPostComments(request));
     }
-
-    @GetMapping(value = "by-user", params = "userName")
-    public ResponseEntity<List<CommentsDto>> getAllCommentsForUser(@RequestParam String userName) {
-        return ResponseEntity.status(OK)
-                             .body(commentService.getAllCommentsForUser(userName));
-    }
-
 }
