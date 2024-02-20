@@ -11,32 +11,11 @@ import java.util.List;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-@Getter
-@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Builder
-//@NamedNativeQuery(
-//        name = "searchChannelsByNameDto",
-//        query = "CALL searchChannelsByName(:channelName)",
-//        resultSetMapping = "search_channels_dto"
-//)
-//@SqlResultSetMapping(
-//        name = "search_channels_dto",
-//        classes = @ConstructorResult(targetClass = SearchChannelsResponseDto.class,
-//                columns = {
-//                        @ColumnResult(name = "id", type = Long.class),
-//                        @ColumnResult(name = "channelName", type = String.class),
-//                        @ColumnResult(name = "channelDescription", type = String.class),
-//                        @ColumnResult(name = "channelType", type = Long.class),
-//                        @ColumnResult(name = "created", type = String.class),
-//                        @ColumnResult(name = "author", type = String.class),
-//                        @ColumnResult(name = "countPosts", type = Long.class)
-//                }
-//        )
-//)
 public class Channel implements Serializable {
     @Id
     @GeneratedValue(strategy = IDENTITY)

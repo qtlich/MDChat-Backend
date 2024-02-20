@@ -193,10 +193,4 @@ public class CommentService {
                                 .toList();
     }
 
-    public boolean containsSwearWords(String comment) {
-        if (comment.contains("shit")) {
-            throw new SpringMDChatException("Comments contains unacceptable language");
-        }
-        return false;
-    }
 }

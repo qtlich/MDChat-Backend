@@ -26,14 +26,14 @@ public abstract class PostMapper {
     @Autowired
     private AuthService authService;
 
-    @Mapping(target = "created", expression = "java(java.time.Instant.now())")
-    @Mapping(target = "description", source = "postRequest.description")
-    @Mapping(target = "channel", source = "channel")
-    @Mapping(target = "voteCount", constant = "0")
-    @Mapping(target = "user", source = "user")
-    @Mapping(target = "id", source = "postRequest.postId")
-    @Mapping(target = "commentsLocked", source = "postRequest.commentsLocked")
-    public abstract Post map(PostRequest postRequest, Channel channel, User user);
+//    @Mapping(target = "created", expression = "java(java.time.Instant.now())")
+//    @Mapping(target = "description", source = "postRequest.description")
+//    @Mapping(target = "channel", source = "channel")
+//    @Mapping(target = "voteCount", constant = "0")
+//    @Mapping(target = "user", source = "user")
+//    @Mapping(target = "id", source = "postRequest.postId")
+//    @Mapping(target = "commentsLocked", source = "postRequest.commentsLocked")
+//    public abstract Post map(PostRequest postRequest, Channel channel, User user);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "postName", source = "postName")

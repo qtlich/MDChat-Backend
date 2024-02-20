@@ -22,8 +22,6 @@ public class ChannelApprovedUsersRights {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
     @NotNull
-    private Short channelType; // 0-public, 1 - restricted, 2 - private
-    @NotNull
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "channelId", referencedColumnName = "id")
     private Channel channel;

@@ -1,18 +1,18 @@
 package com.programming.man.mdchat.dto;
 
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class ChannelDto {
+public class ChangeUserChannelSubscriptionResponseDto {
+    @Id
+    @NotNull
     private Long id;
-    private String name;
-    private String description;
-    private Short channelType;
-    private Integer numberOfPosts;
+    @NotNull
+    private String message;
 }

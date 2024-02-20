@@ -2,8 +2,8 @@ package com.programming.man.mdchat.service;
 
 import com.programming.man.mdchat.dto.GetCountPostVotesRequestDto;
 import com.programming.man.mdchat.dto.GetUserPostVotesResponseDto;
-import com.programming.man.mdchat.dto.VoteRequestV1Dto;
-import com.programming.man.mdchat.dto.VoteResponseV1Dto;
+import com.programming.man.mdchat.dto.VoteRequestDto;
+import com.programming.man.mdchat.dto.VoteResponseDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.PersistenceContext;
@@ -53,7 +53,7 @@ public class VoteService {
     }
 
     @Transactional
-    public VoteResponseV1Dto vote(VoteRequestV1Dto vote) {
+    public VoteResponseDto vote(VoteRequestDto vote) {
         StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("vote")
                                                             .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
@@ -68,17 +68,17 @@ public class VoteService {
                                                             .setParameter("p_commentId", vote.getCommentId())
                                                             .setParameter("p_voteType", vote.getVoteType());
 
-        VoteResponseV1Dto result;
+        VoteResponseDto result;
         try {
             storedProcedure.execute();
-            result = new VoteResponseV1Dto(vote.getPostId(),
-                                           vote.getCommentId(),
-                                           (Long) storedProcedure.getOutputParameterValue("p_countVotes"),
-                                           vote.getVoteType(),
+            result = new VoteResponseDto(vote.getPostId(),
+                                         vote.getCommentId(),
+                                         (Long) storedProcedure.getOutputParameterValue("p_countVotes"),
+                                         vote.getVoteType(),
                                            ((Integer) storedProcedure.getOutputParameterValue("p_voteCounted") == 1) && vote.getVoteType() == 1,
                                            ((Integer) storedProcedure.getOutputParameterValue("p_voteCounted") == 1) && vote.getVoteType() == -1,
-                                           (Integer) storedProcedure.getOutputParameterValue("id"),
-                                           (String) storedProcedure.getOutputParameterValue("message"));
+                                         (Integer) storedProcedure.getOutputParameterValue("id"),
+                                         (String) storedProcedure.getOutputParameterValue("message"));
         } finally {
             storedProcedure.unwrap(ProcedureOutputs.class).release();
         }

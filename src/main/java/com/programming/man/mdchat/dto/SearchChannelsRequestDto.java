@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class SearchChannelsRequestDto {
+    private Long userId;
     private String channelName;
-    private Long descLength;
-    private Short searchMode;
+    private Integer maxNameLength;
+    private Integer maxDescriptionLength;
+    private Integer limit;
 }

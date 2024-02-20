@@ -1,7 +1,6 @@
 package com.programming.man.mdchat.controller;
 
 import com.programming.man.mdchat.dto.*;
-import com.programming.man.mdchat.service.AuthService;
 import com.programming.man.mdchat.service.ChannelService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.ResponseEntity.status;
 
 @RestController
@@ -28,23 +26,33 @@ public class ChannelController {
         return status(HttpStatus.OK).body(channelService.channelCUD(request));
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ChannelDto>> getAllChannels() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(channelService.getAll());
-    }
-    @PostMapping("/search")
-    public ResponseEntity<List<SearchChannelsResponseDto>> searchChannels(@RequestBody SearchChannelsRequestDto searchChannelRequest) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(channelService.searchChannels(searchChannelRequest.getChannelName(),  searchChannelRequest.getDescLength(),searchChannelRequest.getSearchMode()));
+    @PostMapping(value = "universal-channel-posts")
+    public ResponseEntity<List<GetChannelPostsResponseUniversalDto>> getChannelPostsUniversal(@RequestBody GetChannelPostsRequestUniversalDto request) {
+        return status(HttpStatus.OK).body(channelService.getChannelPostsUniversal(request));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ChannelDto> getChannel(@PathVariable Long id) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(channelService.getChannel(id));
+    @PostMapping(value = "get-description")
+    public ResponseEntity<GetChannelDescriptionResponseDto> getChannelDescription(@RequestBody GetChannelDescriptionRequestDto request) {
+        return status(HttpStatus.OK).body(channelService.getChannelDescription(request));
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<SearchChannelsResponseDto>> searchChannels(@RequestBody SearchChannelsRequestDto request) {
+        return status(HttpStatus.OK).body(channelService.searchChannels(request));
+    }
+
+    @PostMapping("/change-subscription")
+    public ResponseEntity<List<ChangeUserChannelSubscriptionResponseDto>> changeUserChannelSubscription(@RequestBody ChangeUserChannelSubscriptionRequestDto request) {
+        return status(HttpStatus.OK).body(channelService.changeUserChannelSubscription(request));
+    }
+
+    @PostMapping("/get-subscription")
+    public ResponseEntity<GetUserChannelSubscriptionResponseDto> getUserChannelSubscription(@RequestBody GetUserChannelSubscriptionRequestDto request) {
+        return status(HttpStatus.OK).body(channelService.getUserChannelSubscription(request));
+    }
+
+    @PostMapping("/get-count-subscribers")
+    public ResponseEntity<GetChannelCountSubscribersResponseDto> getChannelCountSubscribers(@RequestBody GetChannelCountSubscribersRequestDto request) {
+        return status(HttpStatus.OK).body(channelService.getChannelCountSubscribers(request));
     }
 }

@@ -20,7 +20,7 @@ public class VoteController {
     private final VoteService voteService;
 
     @PostMapping(value = "vote")
-    public ResponseEntity<VoteResponseV1Dto> vote(@RequestBody VoteRequestV1Dto voteDto) {
+    public ResponseEntity<VoteResponseDto> vote(@RequestBody VoteRequestDto voteDto) {
         return status(HttpStatus.OK).body(voteService.vote(voteDto));
     }
 
