@@ -36,4 +36,5 @@ public class ChannelApprovedUsersRights {
     private boolean canComment;
     private boolean canRemovePosts;
     private boolean canRemoveComments;
+    private boolean canAssignUserRights;
 }
