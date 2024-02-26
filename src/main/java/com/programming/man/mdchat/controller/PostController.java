@@ -19,7 +19,6 @@ import static org.springframework.http.ResponseEntity.status;
 @AllArgsConstructor
 @Slf4j
 public class PostController {
-    @Autowired
     private final PostService postService;
 
     @PostMapping(value = "cud") //posts/cud
