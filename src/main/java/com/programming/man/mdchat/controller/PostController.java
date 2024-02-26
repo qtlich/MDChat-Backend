@@ -19,7 +19,6 @@ import static org.springframework.http.ResponseEntity.status;
 @AllArgsConstructor
 @Slf4j
 public class PostController {
-    @Autowired
     private final PostService postService;
 
     @PostMapping(value = "cud") //posts/cud
@@ -47,7 +46,7 @@ public class PostController {
         return status(HttpStatus.OK).body(postService.showHidePost(request));
     }
     @PostMapping(value = "bookmark-post")
-    public ResponseEntity<List<BookmarkPostResponseDto>>  saveUnsavePost(@RequestBody BookmarkPostRequestDto request)
+    public ResponseEntity<List<BookmarkPostResponseDto>> bookmarkPost(@RequestBody BookmarkPostRequestDto request)
     {
         return status(HttpStatus.OK).body(postService.bookmarkPost(request));
     }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookmarkPostRequestDto {
-    private Long postId;
+public class BanReasonResponseDto {
+    private Long id;
+    private String name;
 }

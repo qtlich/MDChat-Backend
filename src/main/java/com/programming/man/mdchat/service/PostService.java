@@ -97,13 +97,11 @@ public class PostService {
 
     @Transactional(readOnly = false)
     public List<BookmarkPostResponseDto> bookmarkPost(BookmarkPostRequestDto postRequest) {
-        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("saveUnsaveUserPost")
+        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery("bookmarkPost")
                                                             .registerStoredProcedureParameter("p_userId", Long.class, ParameterMode.IN)
                                                             .registerStoredProcedureParameter("p_postId", Long.class, ParameterMode.IN)
-                                                            .registerStoredProcedureParameter("p_savePost", Boolean.class, ParameterMode.IN)
-                                                            .setParameter("p_userId", authService.isLoggedIn() ? (Long) authService.getCurrentUser().getId() : null)
-                                                            .setParameter("p_postId", postRequest.getPostId())
-                                                            .setParameter("p_savePost", postRequest.getBookmarkPost());
+                                                            .setParameter("p_userId", authService.isLoggedIn() ? authService.getCurrentUser().getId() : null)
+                                                            .setParameter("p_postId", postRequest.getPostId());
         List<BookmarkPostResponseDto> result;
         try {
             List<Object[]> resultObjects = storedProcedure.getResultList();
@@ -168,9 +166,8 @@ public class PostService {
 
     @Transactional(readOnly = false)
     public Long getCommentsCount(Long postId) {
-        Query query = entityManager
-                .createNativeQuery("SELECT getPostCountComments(?1)")
-                .setParameter(1, postId);
+        Query query = entityManager.createNativeQuery("SELECT getPostCountComments(?1)")
+                                   .setParameter(1, postId);
         return ((Long) query.getSingleResult()).longValue();
     }
 
@@ -226,7 +223,6 @@ public class PostService {
         }
         return result;
     }
-
 
 
     @Transactional(readOnly = true)

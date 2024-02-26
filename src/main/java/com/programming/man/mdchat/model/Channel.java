@@ -41,5 +41,5 @@ public class Channel implements Serializable {
     @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     private Boolean deleted;
-    private Boolean modified;
+    private Instant modified;
 }

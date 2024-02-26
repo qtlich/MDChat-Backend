@@ -6,23 +6,23 @@ import lombok.*;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Builder
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRoles {
+public class RolePermissions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "id")
-    private User user;
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "roleId", referencedColumnName = "id")
-    private Role roles;
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    private Role role;
+
+    @ManyToOne
+    @JoinColumn(name = "permission_id", referencedColumnName = "id")
+    private Permission permission;
     @NotNull
     private Instant created;
 }
