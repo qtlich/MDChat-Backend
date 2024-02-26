@@ -9,5 +9,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BookmarkPostRequestDto {
     private Long postId;
-    private Boolean bookmarkPost;
 }

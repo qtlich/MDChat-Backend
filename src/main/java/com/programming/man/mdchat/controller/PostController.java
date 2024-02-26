@@ -47,7 +47,7 @@ public class PostController {
         return status(HttpStatus.OK).body(postService.showHidePost(request));
     }
     @PostMapping(value = "bookmark-post")
-    public ResponseEntity<List<BookmarkPostResponseDto>>  saveUnsavePost(@RequestBody BookmarkPostRequestDto request)
+    public ResponseEntity<List<BookmarkPostResponseDto>> bookmarkPost(@RequestBody BookmarkPostRequestDto request)
     {
         return status(HttpStatus.OK).body(postService.bookmarkPost(request));
     }
