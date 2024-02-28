@@ -1,7 +1,5 @@
 package com.programming.man.mdchat.dto;
 
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BanReasonResponseDto {
-    @Id
-    @NotNull
+public class ManageUserChannelBanningResponseDto {
     private Long id;
-    @NotNull
-    private String name;
+    private String message;
 }

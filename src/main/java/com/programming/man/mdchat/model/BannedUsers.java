@@ -23,6 +23,9 @@ public class BannedUsers {
     @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "authorId", referencedColumnName = "id")
+    private User author;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channelId", referencedColumnName = "id")
     private Channel channel;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,6 +33,8 @@ public class BannedUsers {
     private BanReason banreason;
     private String note;
     private Short daysBanned;
+    @NotNull
+    private Boolean permanentBanned;
     @NotNull
     private Instant created;
 }

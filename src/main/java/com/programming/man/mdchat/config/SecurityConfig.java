@@ -67,6 +67,8 @@ public class SecurityConfig {
                            .requestMatchers("/api/posts/cud").authenticated()
                            .requestMatchers("/api/user-management/**",
                                             "/api/user-management/banreasons/get").permitAll()
+                           .requestMatchers("/api/user-management/search-users",
+                                            "/api/user-management/get-channel-banned-users").authenticated()
                            .requestMatchers("/api/channel/**",
                                             "/api/channel/universal-channel-posts").permitAll()
                            .requestMatchers("/api/comments/**",

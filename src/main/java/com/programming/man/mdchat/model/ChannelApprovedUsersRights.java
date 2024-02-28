@@ -29,12 +29,16 @@ public class ChannelApprovedUsersRights {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "authorId", referencedColumnName = "id")
+    private User author;
     @NotNull
     private Instant created;
-    private boolean canView;
-    private boolean canPost;
+    private boolean canViewChannel;
+    private boolean canViewPosts;
+    private boolean canCreatePosts;
+    private boolean canVote;
     private boolean canComment;
-    private boolean canRemovePosts;
-    private boolean canRemoveComments;
-    private boolean canAssignUserRights;
+    private boolean isChannelModerator;
+    private boolean isAdministrator;
 }
