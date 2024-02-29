@@ -1,25 +1,37 @@
-#version: '3'
-#
-#services:
-#  mysql:
-#    image: mysql:8.0
-#    hostname: mysql
-#    restart: always
-#    volumes:
-#      - "./.data/db:/var/lib/mysql"
-#    environment:
-#      - MYSQL_ROOT_PASSWORD=iA2YKJH;zED8n@e
-#      - MYSQL_DATABASE=mdchat
-#      #- MYSQL_USER=root
-#      - MYSQL_PASSWORD=iA2YKJH;zED8n@e
-#    ports:
-#      - 3366:3366
-#
-#  mdchat_api:
-#    image: mdchat_api:latest
-#    ports:
-#      - 8080:8080
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3366/mdchat?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
-#    depends_on:
-#      - mysql
+version: '3'
+
+services:
+  mdchat_nginx:
+    build: D:/Projects/mdchat-front/
+    image: mdchat_http
+    container_name: mdchat_nginx
+    ports:
+      - 80:80
+    expose:
+      - 80
+    networks:
+      - internalnet
+
+  mysql:
+    image: mysql:8
+    container_name: mdchat_mysql
+    volumes:
+      - D:/VolMdChatMySQL:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=iA2YKJH;zED8n@e
+      - MYSQL_DATABASE=mdchat
+
+  mdchat_api:
+    image: mdchat_api
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mdchat?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+    depends_on:
+      - mysql
+
+networks:
+  internalnet:
+    driver: bridge
